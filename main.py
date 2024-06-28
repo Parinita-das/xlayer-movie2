@@ -11,6 +11,7 @@ from admin.del_city import DeleteCityHandler
 from admin.del_movie import DeleteMovieHandler
 from admin.edit_movie import EditMovieHandler
 from user.booking_history import BookingHistoryHandler
+from user.get_movie import GetMoviesHandler
 from user.get_seats import BookedSeatsHandler
 from user.select_city import CityDropdownHandler  
 from authorization.signup import UserHandler
@@ -24,7 +25,6 @@ class MainHandler(tornado.web.RequestHandler):
         }
         self.write(response)
 
-        #.
 
 def make_app():
     return tornado.web.Application([
@@ -33,6 +33,7 @@ def make_app():
         (r"/api/login", LoginHandler),
         (r"/api/admin_login", AdLoginHandler),
         (r"/api/add_movie", AddMovieHandler),
+        (r"/api/get_movie", GetMoviesHandler),
         (r"/api/del_movie", DeleteMovieHandler),
         (r"/api/edit_movie", EditMovieHandler),
         (r"/api/search_movie", SearchHandlerByTitle),

@@ -9,7 +9,7 @@ class SeatAvailabilityHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
     movieTable = Database.db['movies']
     cityTable = Database.db['city']
-    # userTable = Database.db['user'].
+    # userTable = Database.db['user']
 
     async def get(self):
         code = 1000

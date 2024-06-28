@@ -11,8 +11,6 @@ class BookingHandler(tornado.web.RequestHandler, Database):
     # cityTable = Database.db['city']
     userTable = Database.db['user']
 
-    #.
-
     async def post(self):
         code = 1000
         status = False
@@ -43,7 +41,6 @@ class BookingHandler(tornado.web.RequestHandler, Database):
             #     code = 1002
             #     raise Exception
 
-            
             showdate = request_data.get('showdate')
 
             if not (showdate):
@@ -57,6 +54,40 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 message = 'Invalid date format, should be YYYY-MM-DD'
                 code = 1005
                 raise Exception
+            
+            movies = await self.movieTable.find_one({
+                '_id': movie_id
+            })
+
+            if not movies:
+                message = 'Movie not found'
+                code = 1008
+                raise Exception
+            
+            show_start_date = movies.get('show_start_date')
+            show_end_date = movies.get('show_end_date')
+
+             # Convert show_end_date to datetime.date if it's not already
+            if isinstance(show_end_date, str):
+                show_end_date = datetime.strptime(show_end_date, '%Y-%m-%d').date()
+
+            if isinstance(show_start_date, str):
+                show_start_date = datetime.strptime(show_start_date, '%Y-%m-%d').date()
+    
+            if date_obj < datetime.now().date():
+                message = 'Showdate must be from current date onwards'
+                code = 1013
+                raise Exception
+            
+            if date_obj < show_start_date:
+                message = 'Showdate must be after movie show_start_date'
+                code = 1015
+                raise Exception
+
+            if date_obj > show_end_date:
+                message = 'Showdate exceeds movie show_end_date'
+                code = 1014
+                raise Exception
 
             showtime = request_data.get('showtime')
 
@@ -64,10 +95,15 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 message = 'showtime is required'
                 code = 1002
                 raise Exception
-
+            
             if not isinstance(showtime, str) or not re.match(r'^\d{2}:\d{2}$', showtime):
                 message = 'Invalid showtime format, should be HH:MM'
                 code = 1006
+                raise Exception
+            
+            if showtime not in movies.get('showtimes', []):
+                message = 'Invalid showtime. Please select a valid showtime for the movie.'
+                code = 1016
                 raise Exception
             
             screen = request_data.get('screen')
@@ -82,7 +118,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 code = 1003
                 raise Exception
 
-            seats = request_data.get('seats') #[1, 2, 50]
+            seats = request_data.get('seats') 
 
             if not (seats):
                 message = 'seats is required'
@@ -97,20 +133,29 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                     code = 1003
                     raise Exception
 
-            # if not isinstance(seats, list) or not all(isinstance(seat, str) for seat in seats):
-            #     message = 'Seats should be a list of strings'
-            #     code = 1007
-            #     raise Exception
-
-            movie = await self.movieTable.find_one({
-                '_id': movie_id,
-                'showtimes': showtime
-            })
-
-            if not movie:
-                message = 'Movie not found'
-                code = 1008
+            if not isinstance(seats, list) or not all(isinstance(seat, str) for seat in seats):
+                message = 'Seats should be a list of strings'
+                code = 1007
                 raise Exception
+            
+            # Check if any of the seats are already booked for the given showdate and showtime
+            existing_bookings = await self.bookingTable.find({
+                'movie_id': movie_id,
+                'showdate': showdate,
+                'showtime': showtime,
+                'seats': {'$in': seats}
+            }).to_list(length=None)
+
+            if existing_bookings:
+                booked_seats = set()
+                for booking in existing_bookings:
+                    booked_seats.update(booking['seats'])
+
+                conflicting_seats = set(seats) & booked_seats
+                if conflicting_seats:
+                    message = f'Seats {", ".join(conflicting_seats)} already booked for this showtime and showdate'
+                    code = 1009
+                    raise Exception
 
             # city = await self.cityTable.find_one({'_id': ObjectId(city_id)})
 
@@ -119,16 +164,14 @@ class BookingHandler(tornado.web.RequestHandler, Database):
             #     code = 1009
             #     raise Exception
             
-            
-            total_price  = movie.get('seat_price') * len(seats)
-            
+            total_price = movies.get('seat_price') * len(seats)
 
             booking = {
-                'movie_id': movie['_id'],
+                'movie_id': movies['_id'],
                 # 'city_id': ObjectId(city_id),
                 'showdate': showdate,
                 'showtime': showtime,
-                'screen' : screen,
+                'screen': screen,
                 'seats': seats,
                 'total_price': total_price
             }

@@ -8,7 +8,6 @@ class UserHandler(tornado.web.RequestHandler, Database):
 
     userTable = Database.db['user']
 
-    #Create
     async def post(self):
         code = 1000
         status = False

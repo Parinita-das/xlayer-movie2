@@ -9,8 +9,6 @@ class BookingHistoryHandler(tornado.web.RequestHandler, Database):
     cityTable = Database.db['city']
     userTable = Database.db['user']
 
-    #.
-
     async def get(self):
         code = 2000
         status = False

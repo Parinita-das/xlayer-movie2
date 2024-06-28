@@ -11,8 +11,6 @@ class BookedSeatsHandler(tornado.web.RequestHandler, Database):
     cityTable = Database.db['city']
     userTable = Database.db['user']
 
-    #.
-
     async def get(self):
         code = 1000
         status = False
@@ -36,12 +34,12 @@ class BookedSeatsHandler(tornado.web.RequestHandler, Database):
                 code = 1002
                 raise Exception
 
-            bookings = self.bookingTable.find({
+            booking = self.bookingTable.find({
                 'movie_id': movie_id,
                 'showtime': showtime
             })
 
-            async for i in bookings:
+            async for i in booking:
                 result.extend(i.get("seats")) 
 
             if result:

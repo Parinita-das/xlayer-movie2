@@ -13,7 +13,6 @@ class DeleteMovieHandler(tornado.web.RequestHandler):
         message = ''
 
         try:
-            # Extract title from request body.
             request_data = json.loads(self.request.body)
             movie_title = request_data.get('title')
 
