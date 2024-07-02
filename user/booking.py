@@ -4,6 +4,7 @@ from bson.objectid import ObjectId
 import tornado.web
 import re
 from con import Database
+from authorization.JwtConfiguration.auth import xenProtocol
 
 class BookingHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
@@ -11,6 +12,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
     # cityTable = Database.db['city']
     userTable = Database.db['user']
 
+    @xenProtocol
     async def post(self):
         code = 1000
         status = False
@@ -33,6 +35,22 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 code = 1002
                 raise Exception
             movie_id = ObjectId(movie_id)
+
+            user_id = self.user_id
+
+            if not user_id:
+                message = 'user_id is required'
+                code = 1002
+                raise Exception
+            user_id = ObjectId(user_id)
+
+            # Validate user_id against userTable
+            user = await self.userTable.find_one({'_id': user_id})
+
+            if not user:
+                message = 'User not found'
+                code = 1017
+                raise Exception
 
             # city_id = request_data.get('city_id')
 
@@ -168,6 +186,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
 
             booking = {
                 'movie_id': movies['_id'],
+                'user_id':user['_id'],
                 # 'city_id': ObjectId(city_id),
                 'showdate': showdate,
                 'showtime': showtime,

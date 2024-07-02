@@ -1,11 +1,13 @@
 import tornado.web
 from bson.objectid import ObjectId
 from con import Database
+from authorization.JwtConfiguration.auth import xenProtocol
 
 class SearchHandlerByTitle(tornado.web.RequestHandler, Database):
     movieTable = Database.db['movies']
     userTable = Database.db['user']
 
+    @xenProtocol
     async def get(self):
         code = 4000
         status = False

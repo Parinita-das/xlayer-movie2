@@ -4,7 +4,7 @@ import tornado
 
 from admin.add_city import AddCityHandler
 from admin.add_movie import AddMovieHandler
-from authorization.admin_login import AdLoginHandler
+# from authorization.admin_login import AdLoginHandler
 from user.available_seat import SeatAvailabilityHandler
 from user.booking import BookingHandler
 from admin.del_city import DeleteCityHandler
@@ -16,7 +16,7 @@ from user.get_seats import BookedSeatsHandler
 from user.select_city import CityDropdownHandler  
 from authorization.signup import UserHandler
 from user.search_movie import SearchHandlerByTitle
-from authorization.user_login import LoginHandler
+from authorization.login import LoginHandler
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -31,7 +31,7 @@ def make_app():
         (r"/api", MainHandler),
         (r"/api/users", UserHandler),
         (r"/api/login", LoginHandler),
-        (r"/api/admin_login", AdLoginHandler),
+        # (r"/api/admin_login", AdLoginHandler),
         (r"/api/add_movie", AddMovieHandler),
         (r"/api/get_movie", GetMoviesHandler),
         (r"/api/del_movie", DeleteMovieHandler),
@@ -43,13 +43,13 @@ def make_app():
         (r"/api/booking", BookingHandler),
         (r"/api/get_seats", BookedSeatsHandler),
         (r"/api/booking_history", BookingHistoryHandler),
-        (r"/available_seat", SeatAvailabilityHandler),
+        (r"/api/available_seat", SeatAvailabilityHandler),
 
 
     ])
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(2002)
-    print("Server is running on http://localhost:2002")
+    app.listen(3000)
+    print("Server is running on http://localhost:3000")
     tornado.ioloop.IOLoop.current().start()

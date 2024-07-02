@@ -1,7 +1,8 @@
 import json
 from bson.objectid import ObjectId
 import tornado.web
-
+import bcrypt 
+import re
 from con import Database
 
 class UserHandler(tornado.web.RequestHandler, Database):
@@ -18,10 +19,10 @@ class UserHandler(tornado.web.RequestHandler, Database):
             # Parse the request body as JSON.
             try:
                 self.request.arguments = json.loads(self.request.body.decode())
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 code = 1001
                 message = "Invalid JSON"
-                raise Exception
+                raise
 
             print(self.request.arguments)
 
@@ -32,7 +33,7 @@ class UserHandler(tornado.web.RequestHandler, Database):
                 message = 'Name is required'
                 code = 4434
                 raise Exception
-            elif type(mName) != str:
+            elif type(mName)!= str:
                 message = 'name should be in string'
                 code = 4922
                 raise Exception
@@ -42,9 +43,23 @@ class UserHandler(tornado.web.RequestHandler, Database):
                 raise Exception
             
             mEmail = self.request.arguments.get('email')
-            if not mEmail or '@' not in mEmail:
-                message = 'email_id is required'
-                code = 4533
+            # if not mEmail or '@' not in mEmail:
+            #     message = 'email_id is required'
+            #     code = 4533
+            #     raise Exception
+            
+            # Regular expression for validating email format
+            email_regex = r'^[\w\.-]+@[a-zA-Z\d\-]+(\.[a-zA-Z\d\-]+)*\.[a-zA-Z]+$'
+            if not re.match(email_regex, mEmail):
+                code = 4038
+                message = 'Invalid email format'
+                raise Exception
+            
+            # Check if email already exists
+            existing_user = await self.userTable.find_one({'email': mEmail})
+            if existing_user:
+                message = 'User with this email already exists'
+                code = 4039
                 raise Exception
 
             mMobile = self.request.arguments.get('mobile')
@@ -73,17 +88,19 @@ class UserHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
             mConfirmPassword = self.request.arguments.get('confirmPassword')
-            if mPassword != mConfirmPassword:
+            if mPassword!= mConfirmPassword:
                 code = 1001
                 message = "Passwords do not match"
                 raise Exception
+            
+            hashed_password = bcrypt.hashpw(mPassword.encode('utf-8'),bcrypt.gensalt()).decode('utf-8')
             
             # Create the user data dictionary
             data = {
                 'name': mName,
                 'email': mEmail,
                 'mobile': mMobile,
-                'password': mPassword
+                'password': hashed_password
             }
 
             addUser = await self.userTable.insert_one(data)
@@ -103,12 +120,19 @@ class UserHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
  
+        except json.JSONDecodeError as e:
+            code = 1001
+            message = 'Invalid JSON'
+            print(e)
+        except KeyError as e:
+            code = 1003
+            message = 'Key error occurred'
+            print(e)
         except Exception as e:
             code = 1005
             if not len(message):
                 message = 'Internal error'
                 print(e)
-                raise Exception
         
         response = {
                 'code': code,
@@ -116,16 +140,11 @@ class UserHandler(tornado.web.RequestHandler, Database):
                 'status': status,
             }
 
-        try:
-            if len(result):
-                response['result'] = result
-            #self.write(json.dumps(response))
-            self.write(response)
-            self.finish()
-        except Exception as e:
-            message = 'There is some issue'
-            code = 1007
-            raise Exception    
+        if result:
+            response['result'] = result
+
+        self.write(response)
+        self.finish()   
             
     #Retrieve
     async def get(self):

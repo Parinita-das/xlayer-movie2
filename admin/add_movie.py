@@ -1,13 +1,16 @@
 import datetime
+from bson import ObjectId
 import tornado.web
 import json
+from authorization.JwtConfiguration.auth import xenProtocol
 from con import Database  
 import re
 
 class AddMovieHandler(tornado.web.RequestHandler, Database):
     movie_table = Database.db['movies']
-    admin_table = Database.db['admin']
-
+    usersTable = Database.db['user']
+    
+    @xenProtocol
     async def post(self):
         code = 1000
         status = False
@@ -15,6 +18,21 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
         message = ''
 
         try:
+            user = await self.usersTable.find_one({'_id': ObjectId(self.user_id)})
+            print(user)
+            if not user:
+                message = 'User not found'
+                code = 4002
+                raise tornado.web.HTTPError(400, reason=message)
+
+            mUserRole = user.get('role')
+            print(mUserRole)
+            if mUserRole != 'admin':
+                message = 'Unauthorized access'
+                code = 4030
+                raise tornado.web.HTTPError(403, reason=message)
+
+
             # Parse the request body as JSON.
             try:
                 self.request.arguments = json.loads(self.request.body.decode())
@@ -38,6 +56,13 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
             elif not isinstance(title, str):
                 message = 'Invalid title format'
                 code = 4004
+                raise Exception
+            
+            # Check if movie with the same title already exists
+            existing_movie = await self.movie_table.find_one({'title': title})
+            if existing_movie:
+                message = 'Movie with the same title already exists'
+                code = 4005
                 raise Exception
 
             genre = self.request.arguments.get('genre')

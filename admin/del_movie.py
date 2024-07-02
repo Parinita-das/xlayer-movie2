@@ -2,17 +2,33 @@ from bson import ObjectId
 import tornado.web
 import json
 from con import Database 
+from authorization.JwtConfiguration.auth import xenProtocol
 
 class DeleteMovieHandler(tornado.web.RequestHandler):
-    admin_table = Database.db['admin']
     movie_table = Database.db['movies'] 
+    usersTable = Database.db['user']
 
+    @xenProtocol
     async def post(self):
         code = 1000
         status = False
         message = ''
 
         try:
+            user = await self.usersTable.find_one({'_id': ObjectId(self.user_id)})
+            print(user)
+            if not user:
+                message = 'User not found'
+                code = 4002
+                raise tornado.web.HTTPError(400, reason=message)
+
+            mUserRole = user.get('role')
+            print(mUserRole)
+            if mUserRole != 'admin':
+                message = 'Unauthorized access'
+                code = 4030
+                raise tornado.web.HTTPError(403, reason=message)
+            
             request_data = json.loads(self.request.body)
             movie_title = request_data.get('title')
 
