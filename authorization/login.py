@@ -12,6 +12,7 @@ SECRET_KEY = "Xlayer.in"
 class LoginHandler(tornado.web.RequestHandler, Database):
     userTable = Database.db['user']
     sessionTable = Database.db['session']
+    
 
     async def post(self):
         code = 4014
@@ -96,3 +97,6 @@ class LoginHandler(tornado.web.RequestHandler, Database):
         except Exception as e:
             print(f"Error in response: {e}")
             raise Exception('There is some issue with response')
+        
+    
+    

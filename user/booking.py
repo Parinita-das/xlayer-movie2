@@ -202,7 +202,8 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 status = True
                 message = 'Booking created successfully'
                 result.append({
-                    'booking_id': str(addBooking.inserted_id)
+                    'booking_id': str(addBooking.inserted_id),
+                    'total_price': total_price
                 })
             else:
                 code = 1010

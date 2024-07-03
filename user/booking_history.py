@@ -10,14 +10,9 @@ class BookingHistoryHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
     movieTable = Database.db['movies']
     userTable = Database.db['user']
-
-    # @xenProtocol
-    # async def post(self):
-    #     # Your existing code for creating bookings
-    #     pass
-
+    
     @xenProtocol
-    async def get_booking_history(self):
+    async def get(self):
         code = 1000
         status = False
         result = []

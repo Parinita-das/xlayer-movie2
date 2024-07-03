@@ -5,6 +5,7 @@ import tornado
 from admin.add_city import AddCityHandler
 from admin.add_movie import AddMovieHandler
 # from authorization.admin_login import AdLoginHandler
+from authorization.logout import LogOutHandler
 from user.available_seat import SeatAvailabilityHandler
 from user.booking import BookingHandler
 from admin.del_city import DeleteCityHandler
@@ -44,6 +45,8 @@ def make_app():
         (r"/api/get_seats", BookedSeatsHandler),
         (r"/api/booking_history", BookingHistoryHandler),
         (r"/api/available_seat", SeatAvailabilityHandler),
+        (r"/api/logout", LogOutHandler),
+
 
 
     ])
