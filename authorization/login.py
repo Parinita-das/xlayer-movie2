@@ -45,18 +45,29 @@ class LoginHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
             # Ensure both mPassword and user['password'] are bytes-like objects
-            if not bcrypt.checkpw(mPassword.encode(), user['password'].encode()):
+
+            # Check if user['password'] is bytes or str
+            if isinstance(user['password'], bytes):
+                stored_password_bytes = user['password']
+            elif isinstance(user['password'], str):
+                stored_password_bytes = user['password'].encode()
+
+
+            # Perform the password check using bcrypt
+            if not bcrypt.checkpw(mPassword.encode(), stored_password_bytes):
                 code = 4050
                 message = 'Invalid password'
                 raise Exception
 
+
+            
             code = 1000
             status = True
             message = 'Login successfully'
 
             # Create session entry
             session_data = {
-                'user_id': str(user['_id']),  
+                'user_id': user['_id'],  
                 'login_time': int(time.time()),
                 'logout_time': None,
                 'duration': None

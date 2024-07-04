@@ -5,6 +5,13 @@ import tornado.web
 import re
 from con import Database
 from authorization.JwtConfiguration.auth import xenProtocol
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart    
+
+SECRET_KEY = "Xlayer.in"
+EMAIL_SENDER = "parinitaofficial95@gmail.com"  # Update with your email sender
+EMAIL_PASSWORD = "mdzwgkyfcjircoky"   # Update with your email password
 
 class BookingHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
@@ -36,17 +43,16 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 raise Exception
             movie_id = ObjectId(movie_id)
 
-            user_id = self.user_id
 
-            if not user_id:
-                message = 'user_id is required'
+
+            email = request_data.get('email')
+
+            if not email:
+                message = 'email is required'
                 code = 1002
                 raise Exception
-            user_id = ObjectId(user_id)
-
-            # Validate user_id against userTable
-            user = await self.userTable.find_one({'_id': user_id})
-
+            
+            user = await self.userTable.find_one({'_id': self.user_id})
             if not user:
                 message = 'User not found'
                 code = 1017
@@ -150,6 +156,12 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                     message = f'Invalid seat format: seats Should be in format A1 to H10.'
                     code = 1003
                     raise Exception
+                
+            # Check for duplicate seats
+            if len(seats) != len(set(seats)):
+                message = 'Duplicate seats found in the booking request'
+                code = 1008  
+                raise Exception    
 
             if not isinstance(seats, list) or not all(isinstance(seat, str) for seat in seats):
                 message = 'Seats should be a list of strings'
@@ -205,6 +217,10 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                     'booking_id': str(addBooking.inserted_id),
                     'total_price': total_price
                 })
+
+                # Send confirmation email to the user
+                await self.send_booking_confirmation_email(user['email'], movies, showdate, showtime, seats, total_price)
+            
             else:
                 code = 1010
                 message = 'Failed to create booking'
@@ -226,3 +242,26 @@ class BookingHandler(tornado.web.RequestHandler, Database):
         self.set_status(400 if code >= 1000 and code < 1100 else 500)  
         self.write(response)
         self.finish()
+
+    async def send_booking_confirmation_email(self, to_email, movie, showdate, showtime, seats, total_price):
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = EMAIL_SENDER
+            msg['To'] = to_email
+            msg['Subject'] = 'Booking Confirmation'
+
+            email_body = f"Hello,\n\nYour booking for the movie '{movie['title']}' has been confirmed.\n\nMovie Details:\nTitle: {movie['title']}\nShowdate: {showdate}\nShowtime: {showtime}\nSeats: {', '.join(seats)}\nTotal Price: {total_price}\n\nThank you for booking with us!\n\nBest regards,\nYour App Team"
+
+            msg.attach(MIMEText(email_body, 'plain'))
+            print('Hello')
+
+            server = smtplib.SMTP('smtp.gmail.com', 587)  # Update SMTP server details
+            server.starttls()
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_SENDER, to_email, msg.as_string())
+            server.quit()
+
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            raise Exception('Failed to send booking confirmation email')
+

@@ -25,19 +25,8 @@ def xenProtocol(method):
             # token = auth_header.split()[1]
             decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             self.sessionId = decoded.get("_id")
-            self.user_id = decoded.get("user_id")
-            
-            # Validate user_id against userTable
-            user = await userTable.find_one({"_id": ObjectId(self.user_id)})
-            if not user:
-                self.set_status(401)
-                self.write({
-                    'code': 4078,
-                    'message': 'User not found or inactive',
-                    'status': False
-                })
-                self.finish()
-                return
+
+
             # Validate session in sessionTable
             session = await sessionTable.find_one({"_id": ObjectId(self.sessionId)})
             if not session or session.get('blacklisted'):
@@ -50,6 +39,22 @@ def xenProtocol(method):
                 self.finish()
                 return
             
+        
+            # find user by session_id
+            user = await sessionTable.find_one({"_id": ObjectId(self.sessionId)})
+            if not user:
+                self.set_status(401)
+                self.write({
+                    'code': 4078,
+                    'message': 'User not found or inactive',
+                    'status': False
+                })
+                self.finish()
+                return
+            self.user_id = ObjectId(user.get('user_id'))
+        
+
+
         except jwt.ExpiredSignatureError:
             self.set_status(401)
             self.write({

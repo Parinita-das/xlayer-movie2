@@ -4,7 +4,10 @@ import tornado
 
 from admin.add_city import AddCityHandler
 from admin.add_movie import AddMovieHandler
-# from authorization.admin_login import AdLoginHandler
+from forgot_password.Reset_pw import ResetHandler
+from forgot_password.otp import OTPHandler
+from forgot_password.verification_password import VerifyHandler
+from getsession import SessionHandler
 from authorization.logout import LogOutHandler
 from user.available_seat import SeatAvailabilityHandler
 from user.booking import BookingHandler
@@ -19,6 +22,7 @@ from authorization.signup import UserHandler
 from user.search_movie import SearchHandlerByTitle
 from authorization.login import LoginHandler
 
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         response = {
@@ -32,7 +36,6 @@ def make_app():
         (r"/api", MainHandler),
         (r"/api/users", UserHandler),
         (r"/api/login", LoginHandler),
-        # (r"/api/admin_login", AdLoginHandler),
         (r"/api/add_movie", AddMovieHandler),
         (r"/api/get_movie", GetMoviesHandler),
         (r"/api/del_movie", DeleteMovieHandler),
@@ -46,6 +49,12 @@ def make_app():
         (r"/api/booking_history", BookingHistoryHandler),
         (r"/api/available_seat", SeatAvailabilityHandler),
         (r"/api/logout", LogOutHandler),
+        (r"/api/getsession", SessionHandler),
+        ("/api/forgot_password", OTPHandler),       
+        ("/api/verification_pw", VerifyHandler),
+        ("/api/reset_pw", ResetHandler),
+
+
 
 
 

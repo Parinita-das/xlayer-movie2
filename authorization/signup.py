@@ -82,9 +82,20 @@ class UserHandler(tornado.web.RequestHandler, Database):
                 message = 'Input a password'
                 code = 4536
                 raise Exception
-            elif len(mPassword) < 8 :
-                message = 'password should have at least 8 character'
-                code = 4537
+            # Password complexity requirements
+            if len(mPassword) < 8:
+                code = 4042
+                message = 'Password should be at least 8 characters long'
+                raise Exception
+
+            if not any(char.islower() for char in mPassword):
+                code = 4044
+                message = 'Password should contain at least one lowercase letter'
+                raise Exception
+
+            if not any(char.isdigit() for char in mPassword):
+                code = 4045
+                message = 'Password should contain at least one digit'
                 raise Exception
 
             mConfirmPassword = self.request.arguments.get('confirmPassword')
