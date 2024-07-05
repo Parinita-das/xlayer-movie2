@@ -44,8 +44,6 @@ class LoginHandler(tornado.web.RequestHandler, Database):
                 message = 'User not found'
                 raise Exception
 
-            # Ensure both mPassword and user['password'] are bytes-like objects
-
             # Check if user['password'] is bytes or str
             if isinstance(user['password'], bytes):
                 stored_password_bytes = user['password']

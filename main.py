@@ -2,7 +2,6 @@ import tornado.ioloop
 import tornado.web
 import tornado
 
-from admin.add_city import AddCityHandler
 from admin.add_movie import AddMovieHandler
 from forgot_password.Reset_pw import ResetHandler
 from forgot_password.otp import OTPHandler
@@ -11,13 +10,11 @@ from getsession import SessionHandler
 from authorization.logout import LogOutHandler
 from user.available_seat import SeatAvailabilityHandler
 from user.booking import BookingHandler
-from admin.del_city import DeleteCityHandler
 from admin.del_movie import DeleteMovieHandler
 from admin.edit_movie import EditMovieHandler
 from user.booking_history import BookingHistoryHandler
 from user.get_movie import GetMoviesHandler
-from user.get_seats import BookedSeatsHandler
-from user.select_city import CityDropdownHandler  
+from user.get_seats import BookedSeatsHandler 
 from authorization.signup import UserHandler
 from user.search_movie import SearchHandlerByTitle
 from authorization.login import LoginHandler
@@ -41,9 +38,6 @@ def make_app():
         (r"/api/del_movie", DeleteMovieHandler),
         (r"/api/edit_movie", EditMovieHandler),
         (r"/api/search_movie", SearchHandlerByTitle),
-        (r"/api/add_city", AddCityHandler),
-        (r"/api/del_city", DeleteCityHandler),
-        (r"/api/select_city", CityDropdownHandler),
         (r"/api/booking", BookingHandler),
         (r"/api/get_seats", BookedSeatsHandler),
         (r"/api/booking_history", BookingHistoryHandler),

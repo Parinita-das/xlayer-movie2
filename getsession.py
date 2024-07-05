@@ -2,15 +2,15 @@ from datetime import datetime
 import json
 from bson.objectid import ObjectId
 import tornado.web
-from con import Database  # Adjust the import path as per your project structure
-from authorization.JwtConfiguration.auth import xenProtocol  # Adjust the import path as per your project structure
+from con import Database  
+from authorization.JwtConfiguration.auth import xenProtocol  
 
 class SessionHandler(tornado.web.RequestHandler, Database):
     
     userTable = Database.db['user']
     sessionTable = Database.db['session']
 
-    @xenProtocol  # Decorator for authorization, adjust as per your implementation
+    @xenProtocol  
     async def get(self):
         code = 4000
         status = False
