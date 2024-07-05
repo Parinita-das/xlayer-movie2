@@ -6,7 +6,7 @@ from admin.add_movie import AddMovieHandler
 from forgot_password.Reset_pw import ResetHandler
 from forgot_password.otp import OTPHandler
 from forgot_password.verification_password import VerifyHandler
-from getsession import SessionHandler
+from session.getsession import SessionHandler
 from authorization.logout import LogOutHandler
 from user.available_seat import SeatAvailabilityHandler
 from user.booking import BookingHandler
