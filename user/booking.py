@@ -10,13 +10,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart    
 
 SECRET_KEY = "Xlayer.in"
-EMAIL_SENDER = "parinitaofficial95@gmail.com"  # Update with your email sender
-EMAIL_PASSWORD = "mdzwgkyfcjircoky"   # Update with your email password
+EMAIL_SENDER = "parinitaofficial95@gmail.com"  
+EMAIL_PASSWORD = "mdzwgkyfcjircoky"   
 
 class BookingHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
     movieTable = Database.db['movies']
-    # cityTable = Database.db['city']
     userTable = Database.db['user']
 
     @xenProtocol
@@ -57,13 +56,6 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 message = 'User not found'
                 code = 1017
                 raise Exception
-
-            # city_id = request_data.get('city_id')
-
-            # if not (city_id): 
-            #     message = 'city_id is required'
-            #     code = 1002
-            #     raise Exception
 
             showdate = request_data.get('showdate')
 
@@ -186,20 +178,12 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                     message = f'Seats {", ".join(conflicting_seats)} already booked for this showtime and showdate'
                     code = 1009
                     raise Exception
-
-            # city = await self.cityTable.find_one({'_id': ObjectId(city_id)})
-
-            # if not city:
-            #     message = 'City not found'
-            #     code = 1009
-            #     raise Exception
             
             total_price = movies.get('seat_price') * len(seats)
 
             booking = {
                 'movie_id': movies['_id'],
                 'user_id':user['_id'],
-                # 'city_id': ObjectId(city_id),
                 'showdate': showdate,
                 'showtime': showtime,
                 'screen': screen,

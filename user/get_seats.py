@@ -9,7 +9,6 @@ from authorization.JwtConfiguration.auth import xenProtocol
 class BookedSeatsHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
     movieTable = Database.db['movies']
-    cityTable = Database.db['city']
     userTable = Database.db['user']
 
     @xenProtocol

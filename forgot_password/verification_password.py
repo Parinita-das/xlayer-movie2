@@ -26,7 +26,6 @@ class VerifyHandler(tornado.web.RequestHandler, Database):
             otp = self.request.arguments.get('otp')
             mEmail = self.request.arguments.get('email')
 
-            # Validation
             if not otp:
                 code = 4037
                 message = 'OTP is required'
@@ -37,7 +36,6 @@ class VerifyHandler(tornado.web.RequestHandler, Database):
                 message = 'Email is required'
                 raise Exception
 
-            # Find user by OTP and email
             user = await self.userTable.find_one({'otp': otp, 'email': mEmail})
             if not user:
                 code = 4049
@@ -52,7 +50,6 @@ class VerifyHandler(tornado.web.RequestHandler, Database):
                 message = 'OTP has expired'
                 raise Exception
 
-            # OTP is valid
             code = 1000
             status = True
             message = 'OTP is valid. Proceed with password reset.'

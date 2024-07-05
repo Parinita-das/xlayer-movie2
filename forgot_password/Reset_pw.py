@@ -62,7 +62,6 @@ class ResetHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
 
-            # Validate password confirmation
             if mPassword != mConfirmPassword:
                 code = 1003
                 message = 'Passwords do not match'
@@ -71,7 +70,6 @@ class ResetHandler(tornado.web.RequestHandler, Database):
             
             mEmail = self.request.arguments.get('email')
 
-            # Find user by OTP and email
             user = await self.userTable.find_one({'otp': otp, 'email': mEmail})
             if not user:
                 code = 4049
@@ -88,7 +86,6 @@ class ResetHandler(tornado.web.RequestHandler, Database):
             # Hash the new password
             hashed_password = bcrypt.hashpw(mPassword.encode(), bcrypt.gensalt())
 
-            # Update the user's password in the database
             result = await self.userTable.update_one(
                 {'_id': user['_id']},
                 {'$set': {'password': hashed_password}, '$unset': {'otp': '', 'otp_expiry': ''}}

@@ -26,8 +26,6 @@ class UserHandler(tornado.web.RequestHandler, Database):
 
             print(self.request.arguments)
 
-            #fields with validation
-
             mName = self.request.arguments.get('name')
             if not mName:
                 message = 'Name is required'
@@ -157,7 +155,7 @@ class UserHandler(tornado.web.RequestHandler, Database):
         self.write(response)
         self.finish()   
             
-    #Retrieve
+    
     async def get(self):
 
         code = 1000

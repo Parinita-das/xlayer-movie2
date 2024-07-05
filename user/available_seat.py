@@ -9,7 +9,6 @@ from authorization.JwtConfiguration.auth import xenProtocol
 class SeatAvailabilityHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
     movieTable = Database.db['movies']
-    # cityTable = Database.db['city']
     userTable = Database.db['user']
 
     @xenProtocol
@@ -53,7 +52,6 @@ class SeatAvailabilityHandler(tornado.web.RequestHandler, Database):
                 code = 1006
                 raise Exception
 
-            # Get the movie document
             movie = await self.movieTable.find_one({'_id': movie_id})
 
             if not movie:
@@ -66,7 +64,6 @@ class SeatAvailabilityHandler(tornado.web.RequestHandler, Database):
             columns = 10
             total_seats = [f"{row}{col}" for row in rows for col in range(1, columns + 1)]
 
-            # Find bookings for the specific movie, showdate, and showtime
             bookings = self.bookingTable.find({
                 'movie_id': movie_id,
                 'showdate': showdate,

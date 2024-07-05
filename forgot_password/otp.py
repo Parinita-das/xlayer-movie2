@@ -11,8 +11,8 @@ SECRET_KEY = "Xlayer.in"
 # Email configuration
 smtp_server = "smtp.gmail.com"
 smtp_port = 587
-EMAIL_SENDER = "parinitaofficial95@gmail.com"  # Update with your email sender
-EMAIL_PASSWORD = "mdzwgkyfcjircoky"   # Update with your email password
+EMAIL_SENDER = "parinitaofficial95@gmail.com"  
+EMAIL_PASSWORD = "mdzwgkyfcjircoky"   
 
 
 class OTPHandler(tornado.web.RequestHandler, Database):
@@ -35,13 +35,11 @@ class OTPHandler(tornado.web.RequestHandler, Database):
 
             mEmail = self.request.arguments.get('email')
 
-            # Validation
             if not mEmail:
                 code = 4037
                 message = 'Email is required'
                 raise Exception
 
-            # Find user by email
             user = await self.userTable.find_one({'email': mEmail})
             if not user:
                 code = 4049
