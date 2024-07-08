@@ -40,6 +40,13 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
                 code = 1001
                 message = "Invalid JSON"
                 raise Exception
+            
+            image_url = self.request.arguments.get('image_url')
+
+            if image_url and not isinstance(image_url, str):
+                message = 'Invalid image_url format. Must be a string.'
+                code = 4006
+                raise Exception
 
             title = self.request.arguments.get('title')
 
@@ -166,23 +173,40 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
                 code = 8002
                 raise Exception
 
-            seat_price = self.request.arguments.get('seat_price')
+            seat_price_standard = self.request.arguments.get('seat_price_standard')
 
-            if not seat_price:
-                message = 'seat_price is required'
+            if not seat_price_standard:
+                message = 'seat_price_standard is required'
                 code = 9001
                 raise Exception
 
             try:
-                seat_price = float(seat_price)
-                if seat_price <= 0:
+                seat_price_standard = float(seat_price_standard)
+                if seat_price_standard <= 0:
                     raise ValueError
             except ValueError:
-                message = 'Invalid seat_price format. Must be a positive number.'
+                message = 'Invalid seat_price_standard format. Must be a positive number.'
+                code = 9002
+                raise Exception
+
+            seat_price_recliner = self.request.arguments.get('seat_price_recliner')
+
+            if not seat_price_recliner:
+                message = 'seat_price_recliner is required'
+                code = 9001
+                raise Exception
+
+            try:
+                seat_price_recliner = float(seat_price_recliner)
+                if seat_price_recliner <= 0:
+                    raise ValueError
+            except ValueError:
+                message = 'Invalid seat_price_recliner format. Must be a positive number.'
                 code = 9002
                 raise Exception
 
             movie_data = {
+                'image_url': image_url, 
                 'title': title,
                 'genre': genre,
                 'duration': duration,
@@ -191,7 +215,10 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
                 'showtimes': showtimes,
                 'show_start_date': show_start_date,
                 'show_end_date': show_end_date,
-                'seat_price': seat_price,
+                'seat_price': {
+                    'standard': seat_price_standard,
+                    'recliner': seat_price_recliner,
+                }
             }
 
             movie_result = await self.movie_table.insert_one(movie_data)

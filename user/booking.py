@@ -179,7 +179,22 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                     code = 1009
                     raise Exception
             
-            total_price = movies.get('seat_price') * len(seats)
+            # total_price = movies.get('seat_price') * len(seats)
+
+            total_price = 0.0
+
+            seat_price_standard = movies.get('seat_price', {}).get('standard', 0.0)
+            seat_price_recliner = movies.get('seat_price', {}).get('recliner', 0.0)
+
+            for seat in seats:
+                if seat.startswith('A'):
+                    total_price += seat_price_recliner
+                elif seat.startswith('B') or seat.startswith('C') or seat.startswith('D') or seat.startswith('E') or seat.startswith('F') or seat.startswith('G') or seat.startswith('H'):
+                    total_price += seat_price_standard
+                else:
+                    message = 'Invalid seat category'
+                    code = 1010
+                    raise Exception
 
             booking = {
                 'movie_id': movies['_id'],
@@ -203,7 +218,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 })
 
                 # Send confirmation email to the user
-                await self.send_booking_confirmation_email(user['email'], movies, showdate, showtime, seats, total_price)
+                await self.send_booking_confirmation_email(user['email'], movies, showdate, showtime, screen, seats, total_price)
             
             else:
                 code = 1010
@@ -227,14 +242,41 @@ class BookingHandler(tornado.web.RequestHandler, Database):
         self.write(response)
         self.finish()
 
-    async def send_booking_confirmation_email(self, to_email, movie, showdate, showtime, seats, total_price):
+    async def send_booking_confirmation_email(self, to_email, movie, showdate, showtime, screen, seats, total_price):
         try:
             msg = MIMEMultipart()
             msg['From'] = EMAIL_SENDER
             msg['To'] = to_email
             msg['Subject'] = 'Booking Confirmation'
 
-            email_body = f"Hello,\n\nYour booking for the movie '{movie['title']}' has been confirmed.\n\nMovie Details:\nTitle: {movie['title']}\nShowdate: {showdate}\nShowtime: {showtime}\nSeats: {', '.join(seats)}\nTotal Price: {total_price}\n\nThank you for booking with us!\n\nBest regards,\nYour App Team"
+            seat_categories = {
+            'A': 'Recliner',
+            'B': 'Standard',
+            'C': 'Standard',
+            'D': 'Standard',
+            'E': 'Standard',
+            'F': 'Standard',
+            'G': 'Standard',
+            'H': 'Standard'
+            }
+
+            grouped_seats = {
+                'Recliner': [],
+                'Standard': []
+            }
+            for seat in seats:
+                category = seat_categories.get(seat[0], 'Unknown')
+                grouped_seats[category].append(seat)
+
+            seat_category_messages = []
+            for category, seat_list in grouped_seats.items():
+                if seat_list:
+                    seat_category_messages.append(f"{category}: {', '.join(seat_list)}")
+
+
+            seat_category_message = "\n".join(seat_category_messages)
+
+            email_body = f"Hello,\n\nYour booking for the movie '{movie['title']}' has been confirmed.\n\nMovie Details:\nTitle: {movie['title']}\nShowdate: {showdate}\nShowtime: {showtime}\nscreen: {screen}\nSeats: {', '.join(seats)}\n\nSeat category:\n{seat_category_message}\n\nTotal Price: {total_price}\n\nThank you for booking with us!\n\nBest regards,\nYour App Team"
 
             msg.attach(MIMEText(email_body, 'plain'))
             print('Hello')

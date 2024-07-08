@@ -3,7 +3,7 @@ import json
 from bson.objectid import ObjectId
 import tornado.web
 import re
-from con import Database
+from con import Database 
 from authorization.JwtConfiguration.auth import xenProtocol
 
 class BookingHistoryHandler(tornado.web.RequestHandler, Database):
@@ -19,16 +19,18 @@ class BookingHistoryHandler(tornado.web.RequestHandler, Database):
         message = ''
 
         try:
-            user_id = self.get_argument('user_id')  # Get user_id from query parameter
-
-            if not user_id:
-                message = 'user_id is required'
-                code = 1002
+            if not self.user_id:
+                code = 401
+                message = 'Unauthorized access'
                 raise Exception
-            user_id = ObjectId(user_id)
-
-            # Retrieve booking history for the user_id
-            bookings = await self.bookingTable.find({'user_id': user_id}).to_list(length=None)
+            
+            user = await self.userTable.find_one({'_id': ObjectId(self.user_id)})
+            if not user:
+                code = 402
+                message = 'User not found'
+                raise Exception
+            
+            bookings = await self.bookingTable.find({'user_id': self.user_id}).to_list(length=None)
 
             if bookings:
                 status = True

@@ -82,7 +82,9 @@ class LoginHandler(tornado.web.RequestHandler, Database):
             jwt_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
             result.append({
-                'token': jwt_token 
+                'token': jwt_token,
+                'role': user.get('role','user')
+    
             })
         except Exception as e:
             
