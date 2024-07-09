@@ -121,18 +121,6 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 message = 'Invalid showtime. Please select a valid showtime for the movie.'
                 code = 1016
                 raise Exception
-            
-            screen = request_data.get('screen')
-
-            if not (screen):
-                message = 'screen is required'
-                code = 1002
-                raise Exception
-            
-            elif screen not in ['1', '2', '3']:
-                message = 'Invalid screen number.'
-                code = 1003
-                raise Exception
 
             seats = request_data.get('seats') 
 
@@ -178,8 +166,6 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                     message = f'Seats {", ".join(conflicting_seats)} already booked for this showtime and showdate'
                     code = 1009
                     raise Exception
-            
-            # total_price = movies.get('seat_price') * len(seats)
 
             total_price = 0.0
 
@@ -201,7 +187,6 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 'user_id':user['_id'],
                 'showdate': showdate,
                 'showtime': showtime,
-                'screen': screen,
                 'seats': seats,
                 'total_price': total_price
             }
@@ -218,7 +203,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
                 })
 
                 # Send confirmation email to the user
-                await self.send_booking_confirmation_email(user['email'], movies, showdate, showtime, screen, seats, total_price)
+                await self.send_booking_confirmation_email(user['email'], movies, showdate, showtime, seats, total_price)
             
             else:
                 code = 1010
@@ -242,7 +227,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
         self.write(response)
         self.finish()
 
-    async def send_booking_confirmation_email(self, to_email, movie, showdate, showtime, screen, seats, total_price):
+    async def send_booking_confirmation_email(self, to_email, movie, showdate, showtime, seats, total_price):
         try:
             msg = MIMEMultipart()
             msg['From'] = EMAIL_SENDER
@@ -276,7 +261,7 @@ class BookingHandler(tornado.web.RequestHandler, Database):
 
             seat_category_message = "\n".join(seat_category_messages)
 
-            email_body = f"Hello,\n\nYour booking for the movie '{movie['title']}' has been confirmed.\n\nMovie Details:\nTitle: {movie['title']}\nShowdate: {showdate}\nShowtime: {showtime}\nscreen: {screen}\nSeats: {', '.join(seats)}\n\nSeat category:\n{seat_category_message}\n\nTotal Price: {total_price}\n\nThank you for booking with us!\n\nBest regards,\nYour App Team"
+            email_body = f"Hello,\n\nYour booking for the movie '{movie['title']}' has been confirmed.\n\nMovie Details:\nTitle: {movie['title']}\nShowdate: {showdate}\nShowtime: {showtime}\nSeats: {', '.join(seats)}\n\nSeat category:\n{seat_category_message}\n\nTotal Price: {total_price}\n\nThank you for booking with us!\n\nBest regards,\nYour App Team"
 
             msg.attach(MIMEText(email_body, 'plain'))
             print('Hello')
