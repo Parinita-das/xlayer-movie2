@@ -4,14 +4,12 @@ import tornado.web
 import re
 from datetime import datetime
 from con import Database
-from authorization.JwtConfiguration.auth import xenProtocol
 
 class BookedSeatsHandler(tornado.web.RequestHandler, Database):
     bookingTable = Database.db['booking']
     movieTable = Database.db['movies']
     userTable = Database.db['user']
 
-    @xenProtocol
     async def get(self):
         code = 1000
         status = False

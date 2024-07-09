@@ -3,14 +3,12 @@ from bson import ObjectId
 import tornado.web
 import json
 from con import Database  
-from authorization.JwtConfiguration.auth import xenProtocol
 import re
 
 class GetUpcomingHandler(tornado.web.RequestHandler, Database):
     upcoming_movieTable = Database.db['upcoming']
     usersTable = Database.db['user']
 
-    @xenProtocol
     async def get(self):
         code = 1000
         status = False
@@ -25,10 +23,10 @@ class GetUpcomingHandler(tornado.web.RequestHandler, Database):
                 for movie in movies:
                     try:
                         release_date = movie['release_date'].isoformat() if isinstance(movie['release_date'], datetime.datetime) else movie['release_date']
+                        image_url = str(movie.get('image_url', ''))
 
                         result.append({
-                            'movie_id': str(movie['_id']),
-                            'image_url':str(movie['image_url']),
+                            'image_url': image_url,
                             'title': movie['title'],
                             'genre': movie['genre'],
                             'duration': movie['duration'],

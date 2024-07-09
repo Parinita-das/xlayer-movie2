@@ -1,13 +1,11 @@
 import tornado.web
 from bson.objectid import ObjectId
 from con import Database
-from authorization.JwtConfiguration.auth import xenProtocol
 
 class SearchHandlerByTitle(tornado.web.RequestHandler, Database):
     movieTable = Database.db['movies']
     userTable = Database.db['user']
 
-    @xenProtocol
     async def get(self):
         code = 4000
         status = False
@@ -51,7 +49,7 @@ class SearchHandlerByTitle(tornado.web.RequestHandler, Database):
                 code = 2000
                 status = True
             else:
-                message = 'Not found'
+                message = 'Movie Not found'
                 code = 4002
                 raise Exception
 

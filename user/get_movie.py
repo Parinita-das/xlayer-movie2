@@ -3,34 +3,24 @@ from bson import ObjectId
 import tornado.web
 import json
 from con import Database  
-from authorization.JwtConfiguration.auth import xenProtocol
 import re
 
 class GetMoviesHandler(tornado.web.RequestHandler, Database):
     movie_table = Database.db['movies']
     usersTable = Database.db['user']
 
-    @xenProtocol
     async def get(self):
-        code = 1000
-        status = False
-        result = []
-        message = ''
-
         try:
             movies = await self.movie_table.find({}).to_list(length=None)
-
             if movies:
-                status = True
+                result = []
                 for movie in movies:
-                    try:
                         release_date = movie['release_date'].isoformat() if isinstance(movie['release_date'], datetime.datetime) else movie['release_date']
                         show_start_date = movie['show_start_date'].isoformat() if isinstance(movie['show_start_date'], datetime.datetime) else movie['show_start_date']
                         show_end_date = movie['show_end_date'].isoformat() if isinstance(movie['show_end_date'], datetime.datetime) else movie['show_end_date']
-
+                        image_url = str(movie.get('image_url', ''))
                         result.append({
-                            'movie_id': str(movie['_id']),
-                            'image_url':str(movie['image_url']),
+                            'image_url': image_url,
                             'title': movie['title'],
                             'genre': movie['genre'],
                             'duration': movie['duration'],
@@ -42,27 +32,30 @@ class GetMoviesHandler(tornado.web.RequestHandler, Database):
                             'seat_price': movie['seat_price']
                         })
 
-                    except Exception as e:
-                        print(f"Error processing movie ID {str(movie['_id'])}: {e}")
-                        continue  # Skip this movie if there's an error
-
                 message = 'Movies fetched successfully'
+                response = {
+                    'code': 200,
+                    'status': True,
+                    'message': message,
+                    'result': result
+                }
             else:
-                code = 1007
-                message = 'No movies found'
+                response = {
+                    'code': 404,
+                    'status': False,
+                    'message': 'No movies found',
+                    'result': []
+                }
 
         except Exception as e:
             print(e)
-            code = 1011
-            message = 'Internal error'
+            response = {
+                'code': 500,
+                'status': False,
+                'message': 'Internal error',
+                'result': []
+            }
 
-        response = {
-            'code': code,
-            'status': status,
-            'message': message,
-            'result': result
-        }
-
-        self.set_status(400 if code >= 1000 and code < 1100 else 500)
+        self.set_status(response['code'])
         self.write(response)
         self.finish()

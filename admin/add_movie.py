@@ -5,6 +5,8 @@ import json
 from authorization.JwtConfiguration.auth import xenProtocol
 from con import Database  
 import re
+import os
+import uuid
 
 class AddMovieHandler(tornado.web.RequestHandler, Database):
     movie_table = Database.db['movies']
@@ -257,3 +259,6 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
             message = 'There is some issue'
             code = 1004
             raise Exception
+        
+
+
