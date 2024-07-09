@@ -28,6 +28,13 @@ class BookedSeatsHandler(tornado.web.RequestHandler, Database):
             
             movie_id = ObjectId(movie_id)
 
+            movies = await self.movieTable.find_one({'_id': movie_id})
+
+            if not movies:
+                message = 'Movie not found'
+                code = 1008
+                raise Exception
+
             showdate = self.get_argument('showdate', None)
 
             if not showdate:
@@ -41,6 +48,31 @@ class BookedSeatsHandler(tornado.web.RequestHandler, Database):
                 code = 1005
                 raise Exception
             
+            show_start_date = movies.get('show_start_date')
+            show_end_date = movies.get('show_end_date')
+
+             # Convert show_end_date to datetime.date if it's not already
+            if isinstance(show_end_date, str):
+                show_end_date = datetime.strptime(show_end_date, '%Y-%m-%d').date()
+
+            if isinstance(show_start_date, str):
+                show_start_date = datetime.strptime(show_start_date, '%Y-%m-%d').date()
+    
+            if date_obj < datetime.now().date():
+                message = 'Showdate must be from current date onwards'
+                code = 1013
+                raise Exception
+            
+            if date_obj < show_start_date:
+                message = 'Showdate must be after movie show_start_date'
+                code = 1015
+                raise Exception
+
+            if date_obj > show_end_date:
+                message = 'Showdate exceeds movie show_end_date'
+                code = 1014
+                raise Exception
+            
             showtime = self.get_argument('showtime', None)
 
             if not showtime:
@@ -51,6 +83,12 @@ class BookedSeatsHandler(tornado.web.RequestHandler, Database):
                 message = 'Invalid showtime format, should be HH:MM'
                 code = 1006
                 raise Exception
+            if showtime not in movies.get('showtimes', []):
+                message = 'Invalid showtime. Please select a valid showtime for the movie.'
+                code = 1016
+                raise Exception
+            
+
 
             booking = self.bookingTable.find({
                 'movie_id': movie_id,

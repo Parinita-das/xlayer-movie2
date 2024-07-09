@@ -6,8 +6,8 @@ from authorization.JwtConfiguration.auth import xenProtocol
 from con import Database  
 import re
 
-class AddMovieHandler(tornado.web.RequestHandler, Database):
-    movie_table = Database.db['movies']
+class AddUpcomingHandler(tornado.web.RequestHandler, Database):
+    upcoming_movieTable = Database.db['upcoming']
     usersTable = Database.db['user']
     
     @xenProtocol
@@ -66,7 +66,7 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
                 raise Exception
             
             # Check if movie with the same title already exists
-            existing_movie = await self.movie_table.find_one({'title': title})
+            existing_movie = await self.upcoming_movieTable.find_one({'title': title})
             if existing_movie:
                 message = 'Movie with the same title already exists'
                 code = 4005
@@ -122,113 +122,23 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
                 code = 7003
                 raise Exception
 
-            showtimes = self.request.arguments.get('showtimes')
-
-            if not showtimes:
-                message = 'showtimes are required'
-                code = 9001
-                raise Exception
-
-            elif not isinstance(showtimes, list):
-                message = 'Invalid showtimes format. Should be a list of strings.'
-                code = 9002
-                raise Exception
-
-            elif any(not isinstance(time, str) for time in showtimes):
-                message = 'Invalid showtimes format. All entries must be strings.'
-                code = 9003
-                raise Exception
-
-            for time in showtimes:
-                if not re.match(r'^\d{2}:\d{2}$', time):
-                    message = 'Invalid showtimes format. Each entry should be in HH:MM format.'
-                    code = 1006
-                    raise Exception
-
-            show_start_date = self.request.arguments.get('show_start_date')
-
-            if not show_start_date:
-                message = 'show_start_date is required'
-                code = 9101
-                raise Exception
-
-            try:
-                datetime.datetime.fromisoformat(show_start_date)
-            except ValueError:
-                message = 'Invalid show_start_date format. Use ISO date format (YYYY-MM-DD).'
-                code = 8002
-                raise Exception
-
-            show_end_date = self.request.arguments.get('show_end_date')
-
-            if not show_end_date:
-                message = 'show_end_date is required'
-                code = 9102
-                raise Exception
-
-            try:
-                datetime.datetime.fromisoformat(show_end_date)
-            except ValueError:
-                message = 'Invalid show_end_date format. Use ISO date format (YYYY-MM-DD).'
-                code = 8002
-                raise Exception
-
-            seat_price_standard = self.request.arguments.get('seat_price_standard')
-
-            if not seat_price_standard:
-                message = 'seat_price_standard is required'
-                code = 9001
-                raise Exception
-
-            try:
-                seat_price_standard = float(seat_price_standard)
-                if seat_price_standard <= 0:
-                    raise ValueError
-            except ValueError:
-                message = 'Invalid seat_price_standard format. Must be a positive number.'
-                code = 9002
-                raise Exception
-
-            seat_price_recliner = self.request.arguments.get('seat_price_recliner')
-
-            if not seat_price_recliner:
-                message = 'seat_price_recliner is required'
-                code = 9001
-                raise Exception
-
-            try:
-                seat_price_recliner = float(seat_price_recliner)
-                if seat_price_recliner <= 0:
-                    raise ValueError
-            except ValueError:
-                message = 'Invalid seat_price_recliner format. Must be a positive number.'
-                code = 9002
-                raise Exception
-
-            movie_data = {
+            upcoming_movie_data = {
                 'image_url': image_url, 
                 'title': title,
                 'genre': genre,
                 'duration': duration,
                 'release_date': release_date,
                 'director': director,
-                'showtimes': showtimes,
-                'show_start_date': show_start_date,
-                'show_end_date': show_end_date,
-                'seat_price': {
-                    'standard': seat_price_standard,
-                    'recliner': seat_price_recliner,
-                }
             }
 
-            movie_result = await self.movie_table.insert_one(movie_data)
+            upcoming_movie_result = await self.upcoming_movieTable.insert_one(upcoming_movie_data)
 
-            if movie_result.inserted_id:
+            if upcoming_movie_result.inserted_id:
                 code = 2000
                 status = True
                 message = "Movie added successfully"
                 result.append({
-                    'movieId': str(movie_result.inserted_id)
+                    'movieId': str(upcoming_movie_result.inserted_id)
                 })
             else:
                 code = 1006

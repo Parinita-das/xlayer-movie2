@@ -3,6 +3,7 @@ import tornado.web
 import tornado
 
 from admin.add_movie import AddMovieHandler
+from admin.add_upcoming import AddUpcomingHandler
 from forgot_password.Reset_pw import ResetHandler
 from forgot_password.otp import OTPHandler
 from forgot_password.verification_password import VerifyHandler
@@ -16,6 +17,7 @@ from user.booking_history import BookingHistoryHandler
 from user.get_movie import GetMoviesHandler
 from user.get_seats import BookedSeatsHandler 
 from authorization.signup import UserHandler
+from user.get_upcoming import GetUpcomingHandler
 from user.search_movie import SearchHandlerByTitle
 from authorization.login import LoginHandler
 
@@ -47,6 +49,9 @@ def make_app():
         ("/api/forgot_password", OTPHandler),       
         ("/api/verification_pw", VerifyHandler),
         ("/api/reset_pw", ResetHandler),
+        ("/api/add_upcoming", AddUpcomingHandler),
+        ("/api/get_upcoming", GetUpcomingHandler),
+
 
 
 
