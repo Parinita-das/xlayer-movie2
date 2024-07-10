@@ -18,7 +18,10 @@ class GetMoviesHandler(tornado.web.RequestHandler, Database):
                         release_date = movie['release_date'].isoformat() if isinstance(movie['release_date'], datetime.datetime) else movie['release_date']
                         show_start_date = movie['show_start_date'].isoformat() if isinstance(movie['show_start_date'], datetime.datetime) else movie['show_start_date']
                         show_end_date = movie['show_end_date'].isoformat() if isinstance(movie['show_end_date'], datetime.datetime) else movie['show_end_date']
-                        image_url = str(movie.get('image_url', ''))
+
+                        for img in movie.get('images', []):
+                            img['link'] = 'http://10.10.10.136/uploads/{}'.format(img.get('fileName'))
+                            
                         result.append({
                             'image_url': image_url,
                             'title': movie['title'],

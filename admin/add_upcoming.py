@@ -5,6 +5,8 @@ import json
 from authorization.JwtConfiguration.auth import xenProtocol
 from con import Database  
 import re
+from mimetypes import MimeTypes
+from uuid import uuid4
 
 class AddUpcomingHandler(tornado.web.RequestHandler, Database):
     upcoming_movieTable = Database.db['upcoming']
@@ -31,24 +33,38 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 message = 'Unauthorized access'
                 code = 4030
                 raise tornado.web.HTTPError(403, reason=message)
-
-
-            # Parse the request body as JSON.
-            try:
-                self.request.arguments = json.loads(self.request.body.decode())
-            except Exception as e:
-                code = 1001
-                message = "Invalid JSON"
-                raise Exception
             
-            image_url = self.request.arguments.get('image_url')
-
-            if image_url and not isinstance(image_url, str):
-                message = 'Invalid image_url format. Must be a string.'
-                code = 4006
+            try:
+                files = {}
+                args = {}
+                b = self.request.headers.get('Content-Type')
+                tornado.httputil.parse_body_arguments(b, self.request.body, args, files)
+                data = json.loads(args['basic'][0])
+            except Exception as e:
+                message = 'Expected type in Form-Data.'
+                code = 4036
                 raise Exception
 
-            title = self.request.arguments.get('title')
+
+            files = self.request.files.get('photos', [])  
+            images = []
+            for index, mPhoto in enumerate(files):
+                try:
+                    if not mPhoto:
+                        raise Exception(f'{index} photo is missing')
+                    mImage = self.save_photo(mPhoto, f'photo_{index}')
+                    images.append({'fileName': mImage})
+                except Exception as e:
+                    message = str(e)
+                    code = 4553
+                    raise Exception
+            
+            if not images:
+                message = 'Photos are required'
+                code = 4054
+                raise Exception
+
+            title = data.get('title')
 
             if not title:
                 message = 'title is required'
@@ -72,7 +88,7 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 code = 4005
                 raise Exception
 
-            genre = self.request.arguments.get('genre')
+            genre = data.get('genre')
 
             if not genre:
                 message = 'genre is required'
@@ -84,7 +100,7 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 code = 3004
                 raise Exception
 
-            duration = self.request.arguments.get('duration')
+            duration = data.get('duration')
 
             if not duration:
                 message = 'duration is required'
@@ -96,7 +112,7 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 code = 7002
                 raise Exception
 
-            release_date = self.request.arguments.get('release_date')
+            release_date = data.get('release_date')
 
             if not release_date:
                 message = 'release_date is required'
@@ -110,7 +126,7 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 code = 10002
                 raise Exception
 
-            director = self.request.arguments.get('director')
+            director = data.get('director')
 
             if not director:
                 message = 'director is required'
@@ -123,7 +139,7 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
             upcoming_movie_data = {
-                'image_url': image_url, 
+                'images': images, 
                 'title': title,
                 'genre': genre,
                 'duration': duration,
@@ -167,3 +183,12 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
             message = 'There is some issue'
             code = 1004
             raise Exception
+        
+    def save_photo(self, photo, key):
+        unique_id = str(uuid4())
+        mime_type, _ = MimeTypes().guess_type(photo['filename'])
+        extension = MimeTypes().guess_extension(mime_type)
+        file_name = f"{unique_id}{extension}"
+        with open("uploads/" + file_name, 'wb') as output_file:
+            output_file.write(photo['body'])
+        return file_name    
