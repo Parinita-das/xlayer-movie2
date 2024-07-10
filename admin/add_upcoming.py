@@ -139,7 +139,7 @@ class AddUpcomingHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
             upcoming_movie_data = {
-                'images': images, 
+                'image_url': images, 
                 'title': title,
                 'genre': genre,
                 'duration': duration,

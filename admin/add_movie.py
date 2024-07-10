@@ -221,7 +221,7 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
                 raise Exception
 
             movie_data = {
-                'images': images, 
+                'image_url': images, 
                 'title': title,
                 'genre': genre,
                 'duration': duration,
@@ -272,10 +272,7 @@ class AddMovieHandler(tornado.web.RequestHandler, Database):
             message = 'There is some issue'
             code = 1004
             raise Exception
-        
-
-
-
+    
     def save_photo(self, photo, key):
         unique_id = str(uuid4())
         mime_type, _ = MimeTypes().guess_type(photo['filename'])

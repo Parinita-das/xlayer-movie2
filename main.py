@@ -2,6 +2,7 @@ import tornado.ioloop
 import tornado.web
 import tornado
 
+from admin.del_upcoming import DeleteUpcomingHandler
 from admin.add_movie import AddMovieHandler
 from admin.add_upcoming import AddUpcomingHandler
 from forgot_password.Reset_pw import ResetHandler
@@ -51,6 +52,7 @@ def make_app():
         ("/api/reset_pw", ResetHandler),
         ("/api/add_upcoming", AddUpcomingHandler),
         ("/api/get_upcoming", GetUpcomingHandler),
+        ("/api/del_upcoming", DeleteUpcomingHandler),
 
 
 

@@ -4,8 +4,8 @@ import json
 from con import Database 
 from authorization.JwtConfiguration.auth import xenProtocol
 
-class DeleteMovieHandler(tornado.web.RequestHandler):
-    movie_table = Database.db['movies'] 
+class DeleteUpcomingHandler(tornado.web.RequestHandler):
+    upcoming_movieTable = Database.db['upcoming'] 
     usersTable = Database.db['user']
 
     @xenProtocol
@@ -16,25 +16,23 @@ class DeleteMovieHandler(tornado.web.RequestHandler):
 
         try:
             user = await self.usersTable.find_one({'_id': ObjectId(self.user_id)})
-            print(user)
             if not user:
                 message = 'User not found'
                 code = 4002
                 raise tornado.web.HTTPError(400, reason=message)
 
             mUserRole = user.get('role')
-            print(mUserRole)
             if mUserRole != 'admin':
                 message = 'Unauthorized access'
                 code = 4030
                 raise tornado.web.HTTPError(403, reason=message)
             
             request_data = json.loads(self.request.body)
-            movie_title = request_data.get('title')
+            upcoming_movie_title = request_data.get('title')
 
-            movie_table = Database.db['movies']
+            upcoming_movieTable = Database.db['upcoming']
 
-            delete_result = await movie_table.delete_one({'title': movie_title})
+            delete_result = await upcoming_movieTable.delete_one({'title': upcoming_movie_title})
 
             if delete_result.deleted_count > 0:
                 code = 2000
@@ -48,7 +46,6 @@ class DeleteMovieHandler(tornado.web.RequestHandler):
         except Exception as e:
             code = 1003
             message = 'Internal error'
-            print(e)
 
         response = {
             'code': code,
