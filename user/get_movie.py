@@ -7,7 +7,6 @@ import re
 
 class GetMoviesHandler(tornado.web.RequestHandler, Database):
     movie_table = Database.db['movies']
-    usersTable = Database.db['user']
 
     async def get(self):
         try:
@@ -19,11 +18,13 @@ class GetMoviesHandler(tornado.web.RequestHandler, Database):
                         show_start_date = movie['show_start_date'].isoformat() if isinstance(movie['show_start_date'], datetime.datetime) else movie['show_start_date']
                         show_end_date = movie['show_end_date'].isoformat() if isinstance(movie['show_end_date'], datetime.datetime) else movie['show_end_date']
 
+                        image_urls = []
                         for img in movie.get('images', []):
-                            img['link'] = 'http://10.10.10.136/uploads/{}'.format(img.get('fileName'))
-                            
+                            img_url = 'http://10.10.10.139/uploads/{}'.format(img.get('fileName'))
+                            image_urls.append(img_url)
+
                         result.append({
-                            'image_url': image_url,
+                            'image_url': image_urls,
                             'title': movie['title'],
                             'genre': movie['genre'],
                             'duration': movie['duration'],

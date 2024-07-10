@@ -23,10 +23,14 @@ class GetUpcomingHandler(tornado.web.RequestHandler, Database):
                 for movie in movies:
                     try:
                         release_date = movie['release_date'].isoformat() if isinstance(movie['release_date'], datetime.datetime) else movie['release_date']
-                        image_url = str(movie.get('image_url', ''))
+                        
+                        image_urls = []
+                        for img in movie.get('images', []):
+                            img_url = 'http://10.10.10.139/uploads/{}'.format(img.get('fileName'))
+                            image_urls.append(img_url)
 
                         result.append({
-                            'image_url': image_url,
+                            'image_url': image_urls,
                             'title': movie['title'],
                             'genre': movie['genre'],
                             'duration': movie['duration'],
